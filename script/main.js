@@ -17,7 +17,7 @@ const gameBoard = (() => {
     [ , , ],
     [ , , ]
     ];
-    const modBoard = (symbol,y, x) => board[y][x] = symbol;
+    const modBoard = () => markSpot(y, x);
     return {
     modBoard,
     board,
@@ -36,13 +36,14 @@ const player = type => {
 
 function markSpot(xpos, ypos) {
     let turn = gameManager.current_turn;
-    if(turn === 1)
+    if(turn === 1 && gameBoard.board[ypos][xpos] === ' ')
     {
         gameBoard.board[ypos][xpos] = 'O';
         gameManager.current_turn--;
     }
-    else {
-        gameBoard.modBoard('X', ypos, xpos);
+    else if(turn === 0 && gameBoard.board[ypos][xpos] === ' ')
+    {
+        gameBoard.board[ypos][xpos] = 'X';
         gameManager.current_turn++;
     }
     updateBoard();
@@ -84,6 +85,7 @@ function updateBoard() {
             count++;
         }
     }
+    scanBoard();
 }
 
 function renderBoard() {
@@ -115,12 +117,16 @@ function scanBoard() {
         for(let x = 0; x < board[y].length; x++)
         {
             if(board[y][x] !== ' ' && board[y][x] === prof_x.marker)
-                xCoords.push(y,x);
+                xCoords.push(x);
             else if (board[y][x] !== ' ' && board[y][x] === dr_o.marker)
-                oCoords.push(y,x);
+                oCoords.push(x);
         }
     }
+
+    console.log("X coords: " + xCoords);
+    console.log("O coords: " + oCoords);
 }
+
 
 const prof_x = player('X');
 const dr_o = player('O');
