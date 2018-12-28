@@ -1,4 +1,15 @@
-let started = 0;
+const gameManager = (() => {
+    let turns = 0;
+    let current_turn = 0;
+    let started = 0;
+    let winner = 0;
+    return {
+        turns,
+        current_turn,
+        started,
+        winner
+    };
+})();
 
 const gameBoard = (() => {
     let board =[
@@ -6,7 +17,7 @@ const gameBoard = (() => {
     [ , , ],
     [ , , ]
     ];
-    const modBoard = (symbol,x, y) => board[x][y] = symbol;
+    const modBoard = (symbol,y, x) => board[y][x] = symbol;
     return {
     modBoard,
     board,
@@ -17,18 +28,36 @@ const gameBoard = (() => {
 const player = type => {
     let marker = type;
     const mark = (x, y) => {
-       console.log(marker, x, y);
+        if(gameBoard.board[x][y] === ' ')
+            gameBoard.board[x][y] = marker;
     };
     return{mark};
 };
+
+function markSpot(xpos, ypos) {
+    let turn = gameManager.current_turn;
+    if(turn === 1)
+    {
+        gameBoard.board[ypos][xpos] = 'O';
+        gameManager.current_turn--;
+    }
+    else {
+        gameBoard.modBoard('X', ypos, xpos);
+        gameManager.current_turn++;
+    }
+    updateBoard();
+}
 
 function addListeners() {
     let buttons = document.querySelectorAll(".boardCell");
 
     for(let i = 0; i < buttons.length; ++i)
     {
-        buttons[i].addEventListener('click', function() {
-        console.log('clicked');
+        let dataX = buttons[i].dataset.x;
+        let dataY = buttons[i].dataset.y;
+        buttons[i].addEventListener('click', e => {
+            e.preventDefault();
+            markSpot(dataX,dataY);
         });
     }
 }
@@ -55,7 +84,6 @@ function updateBoard() {
             count++;
         }
     }
-  //  console.log(r_Buttons);
 }
 
 function renderBoard() {
@@ -78,10 +106,23 @@ function renderBoard() {
     addListeners();
 }
 
+function scanBoard() {
+    let xCoords = [];
+    let oCoords = [];
+    let board = gameBoard.board;
+    for(let y = 0; y < board.length; y++)
+    {
+        for(let x = 0; x < board[y].length; x++)
+        {
+            if(board[y][x] !== ' ' && board[y][x] === prof_x.marker)
+                xCoords.push(y,x);
+            else if (board[y][x] !== ' ' && board[y][x] === dr_o.marker)
+                oCoords.push(y,x);
+        }
+    }
+}
+
 const prof_x = player('X');
 const dr_o = player('O');
 initBoard();
 renderBoard();
-gameBoard.modBoard('X', 0, 1);
-gameBoard.modBoard('X', 0, 2);
-updateBoard();
