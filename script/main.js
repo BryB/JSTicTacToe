@@ -35,19 +35,177 @@ const player = type => {
 };
 
 function markSpot(xpos, ypos) {
-    let turn = gameManager.current_turn;
-    if(turn === 1 && gameBoard.board[ypos][xpos] === ' ')
+    let player = gameManager.current_turn;
+    if(player === 1 && gameBoard.board[ypos][xpos] === ' ')
     {
         gameBoard.board[ypos][xpos] = 'O';
         gameManager.current_turn--;
+        gameManager.turns++;
+        scanForWinner(ypos, xpos, 'O');
     }
-    else if(turn === 0 && gameBoard.board[ypos][xpos] === ' ')
+    else if(player === 0 && gameBoard.board[ypos][xpos] === ' ')
     {
         gameBoard.board[ypos][xpos] = 'X';
+        gameManager.turns++;
+        scanForWinner(parseInt(ypos), parseInt(xpos), 'X');
         gameManager.current_turn++;
+
     }
     updateBoard();
 }
+
+function winner(player) {
+    console.log(player + " has won!");
+}
+
+function resetGame() {
+    location.reload();
+}
+
+
+function scanForWinner(y, x, player)
+{
+    let n = 3;
+    let counter = gameManager.turns;
+    let board = gameBoard.board;
+
+    if(counter < n + (n - 1))
+        return ;
+    for(let i = 0; i < n; ++i)
+    {
+        if(board[i][x] !== player)
+            break ;
+        if(i === n - 1)
+            winner(player);
+    }
+    for(let i = 0; i < n; ++i)
+    {
+        if(board[y][i] !== player)
+            break ;
+        if(i === n - 1)
+            winner(player);
+    }
+    if(x == y)
+    {
+        for(let i = 0; i < n; ++i)
+        {
+            if(board[i][i] !== player)
+                break;
+            if(i === n - 1)
+                winner(player);
+        }
+    }
+    if(x + y == n - 1) {
+        for(let i = 0; i < n; ++i)
+        {
+            if(board[i][(n - 1 ) - i] !== player)
+                break;
+            if(i === n - 1)
+                winner(player);
+        }
+    }
+    if(counter >= (n * n))
+        resetGame();
+}
+
+/*
+
+public class TripleT {
+
+    enum State{Blank, X, O};
+
+    int n = 3;
+    State[][] board = new State[n][n];
+    int moveCount;
+
+    void Move(int x, int y, State s){
+        if(board[x][y] == State.Blank){
+            board[x][y] = s;
+        }
+        moveCount++;
+
+        //check end conditions
+
+        //check col
+        for(int i = 0; i < n; i++){
+            if(board[x][i] != s)
+                break;
+            if(i == n-1){
+                //report win for s
+            }
+        }
+
+        //check row
+        for(int i = 0; i < n; i++){
+            if(board[i][y] != s)
+                break;
+            if(i == n-1){
+                //report win for s
+            }
+        }
+
+        //check diag
+        if(x == y){
+            //we're on a diagonal
+            for(int i = 0; i < n; i++){
+                if(board[i][i] != s)
+                    break;
+                if(i == n-1){
+                    //report win for s
+                }
+            }
+        }
+
+        //check anti diag (thanks rampion)
+        if(x + y == n - 1){
+            for(int i = 0; i < n; i++){
+                if(board[i][(n-1)-i] != s)
+                    break;
+                if(i == n-1){
+                    //report win for s
+                }
+            }
+        }
+    }
+}
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function addListeners() {
     let buttons = document.querySelectorAll(".boardCell");
@@ -64,12 +222,11 @@ function addListeners() {
 }
 
 function initBoard() {
-    let g_board = gameBoard.board;
-
+    gameManager.current_turn = 0;
     for(let y = 0; y < 3; ++y)
     {
         for(let x = 0; x < 3; ++x)
-            g_board[y][x] = " ";
+            gameBoard.board[y][x] = " ";
     }
 }
 
@@ -85,7 +242,6 @@ function updateBoard() {
             count++;
         }
     }
-    scanBoard();
 }
 
 function renderBoard() {
@@ -107,27 +263,6 @@ function renderBoard() {
     r_Board.innerHTML += '<br>';
     addListeners();
 }
-
-function scanBoard() {
-    let xCoords = [];
-    let oCoords = [];
-    let board = gameBoard.board;
-    for(let y = 0; y < board.length; y++)
-    {
-        for(let x = 0; x < board[y].length; x++)
-        {
-            if(board[y][x] !== ' ' && board[y][x] === prof_x.marker)
-                xCoords.push(x);
-            else if (board[y][x] !== ' ' && board[y][x] === dr_o.marker)
-                oCoords.push(x);
-        }
-    }
-
-    console.log("X coords: " + xCoords);
-    console.log("O coords: " + oCoords);
-}
-
-
 const prof_x = player('X');
 const dr_o = player('O');
 initBoard();
