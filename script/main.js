@@ -1,13 +1,11 @@
 const gameManager = (() => {
     let turns = 0;
-    let current_turn = 0;
+    let current_turn = 'X';
     let started = 0;
-    let winner = 0;
     return {
         turns,
         current_turn,
         started,
-        winner
     };
 })();
 
@@ -17,95 +15,32 @@ const gameBoard = (() => {
     [ , , ],
     [ , , ]
     ];
-    const modBoard = () => markSpot(y, x);
     return {
-    modBoard,
-    board,
+    board
     };
-
 })();
 
 const player = type => {
     let marker = type;
-    const mark = (x, y) => {
-        if(gameBoard.board[x][y] === ' ')
-            gameBoard.board[x][y] = marker;
-    };
-    return{mark};
 };
 
 function markSpot(xpos, ypos) {
     let player = gameManager.current_turn;
-    if(player === 1 && gameBoard.board[ypos][xpos] === ' ')
+    if(player === 'O' && gameBoard.board[ypos][xpos] === '&#8205')
     {
-        gameBoard.board[ypos][xpos] = 'O';
-        gameManager.current_turn--;
+        gameBoard.board[ypos][xpos] = player;
+        gameManager.current_turn = 'X';
         gameManager.turns++;
-        scanForWinner(ypos, xpos, 'O');
+        scanForWinner(parseInt(ypos), parseInt(xpos), player);
     }
-    else if(player === 0 && gameBoard.board[ypos][xpos] === ' ')
+    else if(player === 'X' && gameBoard.board[ypos][xpos] === '&#8205')
     {
-        gameBoard.board[ypos][xpos] = 'X';
+        gameBoard.board[ypos][xpos] = player;
+        gameManager.current_turn = 'O';
         gameManager.turns++;
-        scanForWinner(parseInt(ypos), parseInt(xpos), 'X');
-        gameManager.current_turn++;
-
+        scanForWinner(parseInt(ypos), parseInt(xpos), player);
     }
     updateBoard();
-}
-
-function winner(player) {
-    console.log(player + " has won!");
-}
-
-function resetGame() {
-    location.reload();
-}
-
-
-function scanForWinner(y, x, player)
-{
-    let n = 3;
-    let counter = gameManager.turns;
-    let board = gameBoard.board;
-
-    if(counter < n + (n - 1))
-        return ;
-    for(let i = 0; i < n; ++i)
-    {
-        if(board[i][x] !== player)
-            break ;
-        if(i === n - 1)
-            winner(player);
-    }
-    for(let i = 0; i < n; ++i)
-    {
-        if(board[y][i] !== player)
-            break ;
-        if(i === n - 1)
-            winner(player);
-    }
-    if(x == y)
-    {
-        for(let i = 0; i < n; ++i)
-        {
-            if(board[i][i] !== player)
-                break;
-            if(i === n - 1)
-                winner(player);
-        }
-    }
-    if(x + y == n - 1) {
-        for(let i = 0; i < n; ++i)
-        {
-            if(board[i][(n - 1 ) - i] !== player)
-                break;
-            if(i === n - 1)
-                winner(player);
-        }
-    }
-    if(counter >= (n * n))
-        resetGame();
 }
 
 function addListeners() {
@@ -122,13 +57,17 @@ function addListeners() {
     }
 }
 
+function resetText() {
+    let cellText = document.querySelectorAll(".cellText");
+    let g_board = gameBoard.board;
+        for(let i = 0; i < cellText.length; ++i)
+            cellText[i].innerHTML = "&#8205";
+}
+
 function initBoard() {
-    gameManager.current_turn = 0;
     for(let y = 0; y < 3; ++y)
-    {
         for(let x = 0; x < 3; ++x)
-            gameBoard.board[y][x] = " ";
-    }
+            gameBoard.board[y][x] = "&#8205";
 }
 
 function updateBoard() {
@@ -136,13 +75,11 @@ function updateBoard() {
     let r_Buttons = document.querySelectorAll('.cellText');
     let count = 0;
     for(let y = 0; y < g_Board.length; ++y)
-    {
         for(let x = 0; x < g_Board[y].length; ++x)
         {
             r_Buttons[count].innerHTML = g_Board[y][x];
             count++;
         }
-    }
 }
 
 function renderBoard() {
@@ -164,7 +101,62 @@ function renderBoard() {
     r_Board.innerHTML += '<br>';
     addListeners();
 }
-const prof_x = player('X');
-const dr_o = player('O');
+
+function scanForWinner(y, x, player)
+{
+    let n = 3;
+    let board = gameBoard.board;
+    let turns = gameManager.turns;
+    
+    if(turns < n + (n - 1))
+        return ;
+    for (let i = 0; i < n; ++i)
+    {
+        if(board[i][x] !== player)
+            break ;
+        if(i === n - 1)
+            winner(player);
+    }
+    for (let i = 0; i < n; ++i)
+    {
+        if(board[y][i] !== player)
+            break ;
+        if(i === n - 1)
+            winner(player);
+    }
+    if (x == y)
+        for(let i = 0; i < n; ++i)
+        {
+            if(board[i][i] !== player)
+                break;
+            if(i === n - 1)
+                winner(player);
+        }
+    if (x + y == n - 1)
+        for(let i = 0; i < n; ++i)
+        {
+            if(board[i][(n - 1 ) - i] !== player)
+                break;
+            if(i === n - 1)
+                winner(player);
+        }
+    if (turns >= (n * n))
+        resetGame();
+}
+
+function winner(player) {
+    let header =  document.getElementById('header');
+    
+    header.innerHTML = player + ' Has Won!';
+    gameManager.current_turn = 'X';
+    gameManager.turns = 0;
+    initBoard();
+    resetText();
+}
+
+function resetGame() {
+    location.reload();
+}
+
 initBoard();
 renderBoard();

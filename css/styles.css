@@ -1,0 +1,11 @@
+.boardCell {
+  width: 100px;
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  margin: 30px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
