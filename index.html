@@ -3,15 +3,21 @@
     <head>
         <link rel="stylesheet" type="text/css" href="css/styles.css">
     </head>
-    <body>
-        <h1 id="header" class="info">TicTacToe</h1>
-        <br>
+    <body class="head">
+        <h1 id="header" >TicTacToe</h1>
         <div class="score">
             <h3 id="player1"></h3>
             <h3 id="player2"></h3>
         </div>
         <br>
-        <form id="gameBoard" style="text-align: center;">
+        <form id="gameBoard">
+        </form>
+        <br>
+        <form id="info" method="GET">
+            <input class="inputs" id="p1name" type="text" placeholder="player 1 name" required />
+            <input class="inputs" id="p2name" type="text" placeholder="player 2 name" required />
+            <br>
+            <button class="inputs" id="start" type="submit">Start</button>
         </form>
     </body>
     <script src="./script/main.js"></script>

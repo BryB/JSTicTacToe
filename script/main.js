@@ -9,7 +9,7 @@ const player = (name,tag) => {
     };
 };
 
-const gameBoard = (() => {
+const boardManager = (() => {
     let board =[
     [ , , ],
     [ , , ],
@@ -38,7 +38,7 @@ const gameBoard = (() => {
             }
         }
         r_Board.innerHTML += '<br>';
-        addListeners(); 
+        renderManager.addListeners(); 
     }
     const updateBoard = () => {
     let counter = 0;
@@ -66,50 +66,95 @@ const gameBoard = (() => {
     };
 })();
 
+const renderManager = (() => {
+    let scoreDisp1 = document.getElementById('player1');
+    let scoreDisp2 = document.getElementById('player2');
+    
+    const getInfo = () => {
+        let p1name = document.getElementById('p1name').value;
+        let p2name = document.getElementById('p2name').value;
+        if(p1name)
+            gameManager.player1.setName(p1name);
+        if(p2name)
+            gameManager.player2.setName(p2name);
+    }
+    const renderScore = (player, score) => {
+        let player1 = gameManager.player1.getName();
+        if(player === player1)
+            scoreDisp1.innerHTML = player + ": " + score;
+        else
+            scoreDisp2.innerHTML = player + ": " + score;
+    }
+    const initRender = () => {
+        let started = document.getElementById('start');
+        started.addEventListener('click', e => {
+            e.preventDefault();
+            getInfo();
+            renderScore(gameManager.player1.getName(), 0);
+            renderScore(gameManager.player2.getName(), 0);
+            boardManager.initBoard();
+            boardManager.renderBoard();
+            document.getElementById('info').style.visibility = "hidden";
+            document.getElementById('info').disabled = true;
+        });
+    }
+    const addListeners = () => {
+        let buttons = document.querySelectorAll(".boardCell");
+        for(let i = 0; i < buttons.length; ++i)
+        {
+            let dataX = buttons[i].dataset.x;
+            let dataY = buttons[i].dataset.y;
+            buttons[i].addEventListener('click', e => {
+                e.preventDefault();
+                gameManager.tagSpot(parseInt(dataX),parseInt(dataY));
+            });
+        }
+    }
+    return {
+        getInfo,
+        renderScore,
+        initRender,
+        addListeners,
+    }
+})();
+
 const gameManager = (() => {
     let turnCount = 0;
     let turn = 1;
-    let started = 0;
-    let scoreDisp1 = document.getElementById('player1');
-    let scoreDisp2 = document.getElementById('player2');
     let score1 = 0;
     let score2 = 0;
     const player1 = player('Player 1', 'X');
     const player2 = player('Player 2', 'O');
-    scoreDisp1.innerHTML = player1.getName() + ": " + score1;
-    scoreDisp2.innerHTML = player2.getName() + ": " + score2;
     const currentTurn = () => (turn % 2) === 1 ? player1 : player2;
     const nextTurn = () => ++turn;
     const getTurnCount = () => turnCount;
     const addTurn = () => ++turnCount;
     const getTurn = () => turn;
-    const getStarted = () => started;
-    const setStarted = () => ++started;
     const tagSpot = (x, y) => {
         let player = currentTurn();
         let blank = '&#8205';
-        if(gameBoard.board[y][x] === blank)
+        if(boardManager.board[y][x] === blank)
         {
-            gameBoard.board[y][x] = player.getTag();
+            boardManager.board[y][x] = player.getTag();
             nextTurn();
             addTurn();
             checkWinner(y, x, player);
         }
-        gameBoard.updateBoard();
+        boardManager.updateBoard();
     }
     const dispWinner = (name) => {
         if(name === player1.getName())
-            scoreDisp1.innerHTML = name + ": " +  ++score1;
+            renderManager.renderScore(name, ++score1);
         else
-             scoreDisp2.innerHTML = name + ": " +  ++score2;
+            renderManager.renderScore(name, ++score2);
         turn = 1;
         turnCount = 0;
-        gameBoard.initBoard();
-        gameBoard.resetText();
+        boardManager.initBoard();
+        boardManager.resetText();
     }
     const checkWinner = (y, x, player) => {
-        let n = gameBoard.board.length;
-        let board = gameBoard.board;
+        let n = boardManager.board.length;
+        let board = boardManager.board;
         if(turnCount < n + (n - 1))
             return ;
         for (let i = 0; i < n; ++i)
@@ -150,31 +195,16 @@ const gameManager = (() => {
     }
     return {
         getTurn,
+        player1,
+        player2,
         currentTurn,
         nextTurn,
         getTurnCount,
         addTurn,
-        getStarted,
-        setStarted,
         tagSpot,
         dispWinner,
         checkWinner,
         resetGame,
     };
 })();
-
-function addListeners() {
-    let buttons = document.querySelectorAll(".boardCell");
-    for(let i = 0; i < buttons.length; ++i)
-    {
-        let dataX = buttons[i].dataset.x;
-        let dataY = buttons[i].dataset.y;
-        buttons[i].addEventListener('click', e => {
-            e.preventDefault();
-            gameManager.tagSpot(parseInt(dataX),parseInt(dataY));
-        });
-    }
-}
-
-gameBoard.initBoard();
-gameBoard.renderBoard();
+renderManager.initRender();

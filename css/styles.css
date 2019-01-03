@@ -9,12 +9,15 @@
   display: inline-block;
   font-size: 16px;
 }
-
-.info {
-	text-align: center;
+.head {
+  text-align: center;
 }
 
-.score {
+.inputs{
+  margin: 15px;
+}
+
+.score{
   display: flex;
   flex-flow: row wrap;
   justify-content: space-around;
