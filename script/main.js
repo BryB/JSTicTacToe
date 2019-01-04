@@ -69,17 +69,19 @@ const boardManager = (() => {
 const renderManager = (() => {
     let scoreDisp1 = document.getElementById('player1');
     let scoreDisp2 = document.getElementById('player2');
-    
     const getInfo = () => {
         let p1name = document.getElementById('p1name').value;
         let p2name = document.getElementById('p2name').value;
+        let ai = document.getElementById('p2ai').checked;
+        if(ai)
+            gameManager.setAI();
         if(p1name)
             gameManager.player1.setName(p1name);
         if(p2name)
             gameManager.player2.setName(p2name);
     }
     const renderScore = (player, score) => {
-        let player1 = gameManager.player1.getName();
+        player1 = gameManager.player1.getName();
         if(player === player1)
             scoreDisp1.innerHTML = player + ": " + score;
         else
@@ -115,7 +117,32 @@ const renderManager = (() => {
         renderScore,
         initRender,
         addListeners,
+    };
+})();
+
+const aiPlayer = (() => {
+    let blank = '&#8205';
+    const makeMove = () => {
+        let board = boardManager.board;
+        let y = getRandInt(3);
+        let x = getRandInt(3);
+        if(board[y][x] === blank)
+        {
+            boardManager.board[y][x] = gameManager.player2.getTag();
+            gameManager.nextTurn();
+            gameManager.addTurn();
+            gameManager.checkWinner(y, x, gameManager.player2);
+            boardManager.updateBoard();
+        }
+        else
+            makeMove();
     }
+    const getRandInt = (max) => {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+    return {
+        makeMove,
+    };
 })();
 
 const gameManager = (() => {
@@ -123,8 +150,10 @@ const gameManager = (() => {
     let turn = 1;
     let score1 = 0;
     let score2 = 0;
+    let ai = 0;
     const player1 = player('Player 1', 'X');
     const player2 = player('Player 2', 'O');
+    const setAI = () => ++ai;
     const currentTurn = () => (turn % 2) === 1 ? player1 : player2;
     const nextTurn = () => ++turn;
     const getTurnCount = () => turnCount;
@@ -141,16 +170,15 @@ const gameManager = (() => {
             checkWinner(y, x, player);
         }
         boardManager.updateBoard();
+        if(ai && currentTurn() == player2)
+            aiPlayer.makeMove();
     }
     const dispWinner = (name) => {
         if(name === player1.getName())
             renderManager.renderScore(name, ++score1);
         else
             renderManager.renderScore(name, ++score2);
-        turn = 1;
-        turnCount = 0;
-        boardManager.initBoard();
-        boardManager.resetText();
+        resetGame();
     }
     const checkWinner = (y, x, player) => {
         let n = boardManager.board.length;
@@ -191,12 +219,16 @@ const gameManager = (() => {
             resetGame();
     }
     const resetGame = () => {
-        location.reload();
+        turn = 1;
+        turnCount = 0;
+        boardManager.initBoard();
+        boardManager.resetText();
     }
     return {
         getTurn,
         player1,
         player2,
+        setAI,
         currentTurn,
         nextTurn,
         getTurnCount,
